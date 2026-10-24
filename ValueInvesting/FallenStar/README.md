@@ -34,7 +34,13 @@ python3 backend.py evaluate --cutoffs 2020-12-31 2021-12-31 --horizon 12
 python3 -m unittest discover -p 'test_backend.py'
 ```
 
-By default the SQLite database is `data/fallen_star.sqlite`; `--db` changes it. `data/` is gitignored because it may contain licensed or nonpublic data. Generated forecasts are private until their publication rights and evaluation have been checked. The website does not consume the export yet.
+By default the SQLite database is `data/fallen_star.sqlite`; `--db` changes it. `data/` is gitignored because it may contain licensed or nonpublic data. Generated forecasts are private until their publication rights and evaluation have been checked.
+
+## Website result contract
+
+The GitHub Pages page at `docs/value-investing/fallen-star/` reads `data/manifest.json` and one result file named `data/YYYY-MM.json` for each published bounce month. The result files use the JSON produced by `backend.py run`; each must contain its matching `target_month`, `as_of`, `model_version`, and complete `candidates` list. The frontend applies the Financially Healthy checkbox to that full list and exports the same filtered and sorted rows to Excel.
+
+After historical data rights and out-of-sample performance have been reviewed, generate the next 12 months of approved result files from the **same as-of snapshot**, then set the manifest to `{"status":"ready","as_of":"YYYY-MM-DD","model_version":"...","months":["YYYY-MM",...]}` with only the published months. Publish the manifest last so the page never advertises missing files. Until then, leave the manifest in `awaiting_data` state. Do not place the SQLite database, provider CSVs, or unapproved financial records under `docs/`.
 
 ## Current model and limits
 

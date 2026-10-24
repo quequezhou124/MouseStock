@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0b1930">
+    <meta name="description" content="Explore the Fallen Star candidate filter for ValueInvesting.">
+    <title>Fallen Star · MouseStocks</title>
+    <link rel="stylesheet" href="../../styles.css">
+    <link rel="stylesheet" href="fallen-star.css">
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="brand" href="../../" aria-label="MouseStocks home"><span class="brand-mark" aria-hidden="true">M</span><span>MouseStocks</span></a>
+        <nav class="top-nav" aria-label="Main navigation">
+          <a href="../../">Home</a>
+          <a href="../" aria-current="page">ValueInvesting</a>
+        </nav>
+      </header>
+
+      <main class="fallen-star-page">
+        <a class="back-link" href="../">← Back to ValueInvesting</a>
+        <div class="fallen-star-hero">
+          <p class="eyebrow">CANDIDATE FILTER · CATEGORY 01</p>
+          <h1>Fallen Star</h1>
+          <p class="fallen-star-lead">Find stocks that have fallen sharply and may be approaching the start of a rebound. Choose a future month, then narrow the timing matches to companies that were growing before the drop.</p>
+        </div>
+
+        <section class="fallen-explainer" aria-labelledby="fallen-explainer-title">
+          <div>
+            <p class="eyebrow">THE IDEA</p>
+            <h2 id="fallen-explainer-title">What counts as a Fallen Star?</h2>
+            <p>A <strong>big drop</strong> begins when a stock's adjusted closing price falls at least <strong>20%</strong> below its preceding 12-month high. We estimate the month its price may begin to bounce. A predicted month is an estimate, not a confirmed rebound.</p>
+            <p>For historical testing, a <strong>bounce onset</strong> is a rise of at least 15% from the post-drop low that holds into the following month. The health check looks at growth reported <em>before</em> the drop; it does not decide whether anything fundamental changed afterward.</p>
+          </div>
+          <div class="timeline-card" aria-label="Hypothetical Fallen Star timeline">
+            <p class="timeline-caption">HYPOTHETICAL EXAMPLE</p>
+            <ol class="timeline-list">
+              <li><span class="timeline-dot"></span><div><strong>September 2026</strong><span>Stock A falls 22% from its prior high.</span></div></li>
+              <li><span class="timeline-dot"></span><div><strong>November 2026</strong><span>Predicted bounce onset: two elapsed months after the drop.</span></div></li>
+              <li><span class="timeline-dot"></span><div><strong>December 2026</strong><span>Earliest confirmation under the proposed historical rule.</span></div></li>
+            </ol>
+            <p class="timeline-note">Selecting November would show Stock A. A stock predicted to start bouncing in July 2027 would appear under July 2027 instead.</p>
+          </div>
+        </section>
+
+        <section class="fallen-filter" aria-labelledby="fallen-filter-title">
+          <p class="eyebrow">EXPLORE CANDIDATES</p>
+          <h2 id="fallen-filter-title">Candidate filter</h2>
+          <div class="filter-step">
+            <div class="step-number" aria-hidden="true">1</div>
+            <div class="step-content">
+              <label class="step-label" for="bounce-month">Choose a predicted bounce month</label>
+              <p>Pick any of the next 12 calendar months. Results include stocks whose most likely predicted bounce-onset month matches your selection.</p>
+              <div class="month-row">
+                <select id="bounce-month" name="bounce-month" aria-describedby="month-help"></select>
+                <span id="month-help" class="field-help">The model also limits forecasts by time since each stock's drop and by available history.</span>
+              </div>
+            </div>
+          </div>
+          <div class="filter-step">
+            <div class="step-number" aria-hidden="true">2</div>
+            <div class="step-content">
+              <label class="step-label" for="healthy-only">Check financial health</label>
+              <p>Keep only timing matches with five years of revenue growth evidence available before their drop.</p>
+              <label class="health-toggle"><input id="healthy-only" type="checkbox" disabled><span>Show only financially healthy companies</span></label>
+              <p class="field-help">Pass requires overall revenue growth and increases in at least three of five year-to-year intervals. Missing history is Unknown and does not pass this check.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="fallen-results" aria-labelledby="fallen-results-title">
+          <div class="results-heading">
+            <div><p class="eyebrow">RESULTS</p><h2 id="fallen-results-title">Timing matches</h2></div>
+            <p id="results-context" class="results-context"></p>
+          </div>
+          <div id="results-status" class="results-status" role="status" aria-live="polite">Checking available forecasts…</div>
+          <div id="results-table-host" hidden></div>
+          <section id="evidence-panel" class="evidence-panel" aria-labelledby="evidence-title" hidden>
+            <div class="evidence-heading"><h3 id="evidence-title">Revenue history</h3><button id="close-evidence" type="button" aria-label="Close revenue history">Close</button></div>
+            <p id="evidence-note"></p>
+            <div id="evidence-table-host" hidden></div>
+          </section>
+          <p id="data-note" class="data-note" hidden></p>
+        </section>
+      </main>
+      <footer class="site-footer">MouseStocks</footer>
+    </div>
+    <script type="module" src="fallen-star.mjs"></script>
+  </body>
+</html>

@@ -1,6 +1,6 @@
 # Fallen Star plan
 
-Status: backend prototype implemented in [backend.py](backend.py). Historical provider data, production evaluation, and the website filter are still pending.
+Status: backend prototype and website filter implemented. Historical provider data and production evaluation are still pending, so the live page does not publish candidate forecasts yet.
 
 ## Goal
 
@@ -50,3 +50,27 @@ U.S. filing histories and structured company facts are available through the [SE
 Place the month selector and results under **ValueInvesting → Candidate filter → Fallen Star**. Show each candidate's issuer, listing, drop date and magnitude, forecast bounce month, monthly probability, elapsed time, growth-check status, evidence, and data freshness. Applying the financially healthy checkbox keeps only Pass results. The page should explain unsupported horizons and missing data explicitly.
 
 Keep licensed raw data outside the public repository. The GitHub Pages frontend can read permitted, precomputed forecast results from a scheduled backend job.
+
+### Shared table behavior
+
+Use one reusable table component for **every table on the Fallen Star page**, including timing-match results, financially healthy finalists, and any detailed data tables added later. Do not build separate scrolling or export behavior for individual tables.
+
+- Place each table in a fixed-height or maximum-height container with vertical scrolling for long result sets and horizontal scrolling when columns exceed the available width. Keep column headers visible while scrolling. The container and controls must remain usable on desktop and mobile.
+- Put a clearly visible **Download Excel** button near the top-right corner of each table. It downloads that table's data as an `.xlsx` file with meaningful column names, values, dates, and numeric formats. Include relevant context, such as the selected bounce month, data as-of date, and model version, in a metadata worksheet or an equivalent clearly labelled area.
+- Derive the displayed rows and exported rows from the same filtered and sorted dataset. A month change or Financially Healthy checkbox change must update both. Export **all matching rows**, including rows outside the visible scroll area or a rendered page. Scrolling never changes the export; if sorting is available, the workbook retains the current sort order.
+- Keep the table's complete permitted result set available to the export path, or provide an explicit full-result export source if the page later loads rows in batches. Do not mistake only the rows currently rendered in the browser for the full filtered dataset.
+
+### UI implementation steps
+
+1. Define a shared table interface for column labels, display and Excel value types, the complete filtered row set, current sort order, and export metadata. Use it for candidate results and detailed tables.
+2. Design the responsive scroll container, sticky headers, and top-right Download Excel control once in the shared component.
+3. Connect the selected bounce month and Financially Healthy checkbox to one derived result set that drives both rendering and `.xlsx` export. Preserve any active sorting in that result set.
+4. Verify the export against the backend's selected-month output, including data as-of date and model version, before publishing any candidate data.
+
+### UI acceptance criteria
+
+- Every Fallen Star table has vertical scrolling within a bounded height, horizontal scrolling when needed, sticky headers, and a visible Download Excel button on desktop and mobile.
+- For each selected month and checkbox state, the workbook contains every row shown by that filter, including rows not currently visible in the scroll container; it contains no rows excluded by the filter.
+- Changing the month, checkbox, or supported sort order changes the displayed table and workbook consistently. Scrolling alone changes neither the exported rows nor their order.
+- Each workbook is a valid `.xlsx` file with readable column names, appropriate date and numeric cell formats, and applicable bounce-month, as-of-date, and model-version metadata.
+- New Fallen Star tables receive these behaviors through the same reusable component.

@@ -12,6 +12,7 @@ MouseStocks is a static GitHub Pages site for stock research. The current resear
 | `ValueInvesting/FallenStar/backend.py` | Historical Fallen Star import, labeling, forecast, evaluation, and JSON export. |
 | `ValueInvesting/FallenStar/README.md` | Backend data contract and run instructions. |
 | `docs/` | Public GitHub Pages site. |
+| `docs/value-investing/fallen-star/` | Fallen Star explanation and interactive candidate page. |
 | `docs/value-investing/masterlist/stocks.json` | Website copy of the same names. |
 | `docs/masterlist/index.html` | Redirect for the former global Masterlist URL. |
 
