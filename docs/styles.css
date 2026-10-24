@@ -31,6 +31,16 @@ h2 { margin: 0; font-size: 15px; letter-spacing: -.01em; }
 .card-arrow { margin-left: auto; color: #497e68; font-size: 24px; line-height: 1; }
 .empty-section { padding-top: 112px; }
 .empty-section h1 { font-size: clamp(42px, 6vw, 70px); }
+.value-investing-page { padding: 112px 0 100px; }
+.value-investing-page h1 { font-size: clamp(42px, 6vw, 70px); }
+.candidate-filter { margin-top: 86px; }
+.candidate-filter-heading .eyebrow { margin-bottom: 12px; }
+.candidate-filter h2 { font-size: clamp(25px, 3vw, 34px); letter-spacing: -.04em; }
+.candidate-categories { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; margin-top: 25px; }
+.candidate-category { min-height: 200px; padding: 29px 30px; border: 1px solid #dbe2e6; border-radius: 15px; background: #fff; box-shadow: 0 12px 34px rgba(10,28,44,.035); }
+.category-number { color: #42826d; font-size: 11px; font-weight: 800; letter-spacing: .13em; }
+.candidate-category h3 { margin: 23px 0 12px; font-size: 23px; letter-spacing: -.04em; }
+.candidate-category p { max-width: 340px; margin: 0; color: #667587; font-size: 15px; line-height: 1.55; }
 .masterlist-page { padding: 80px 0 90px; }
 .masterlist-page h1 { font-size: clamp(44px, 6vw, 70px); }
 .masterlist-intro { margin: 20px 0 42px; color: #667587; font-size: 16px; line-height: 1.6; }
@@ -48,4 +58,4 @@ h2 { margin: 0; font-size: 15px; letter-spacing: -.01em; }
 .load-more:hover { background: #f4f8f6; }
 .load-more[hidden], .empty-state[hidden] { display: none; }
 .site-footer { padding: 24px 0 28px; border-top: 1px solid #dae0e5; color: #98a3af; font-size: 12px; }
-@media (max-width: 640px) { .site-shell { padding: 0 22px; } .site-header { min-height: 78px; flex-wrap: wrap; gap: 6px; padding: 18px 0 12px; } .top-nav { width: 100%; gap: 20px; overflow-x: auto; white-space: nowrap; } .header-label { display: none; } .intro { padding: 82px 0 80px; } .intro-copy { font-size: 16px; } .sections { padding-bottom: 60px; } .section-card { min-height: 100px; padding: 18px; } .card-icon { width: 50px; height: 50px; flex-basis: 50px; } .empty-section { padding-top: 82px; } .masterlist-page { padding-top: 62px; } .masterlist-intro { margin-bottom: 32px; } }
+@media (max-width: 640px) { .site-shell { padding: 0 22px; } .site-header { min-height: 78px; flex-wrap: wrap; gap: 6px; padding: 18px 0 12px; } .top-nav { width: 100%; gap: 20px; overflow-x: auto; white-space: nowrap; } .header-label { display: none; } .intro { padding: 82px 0 80px; } .intro-copy { font-size: 16px; } .sections { padding-bottom: 60px; } .section-card { min-height: 100px; padding: 18px; } .card-icon { width: 50px; height: 50px; flex-basis: 50px; } .empty-section { padding-top: 82px; } .value-investing-page { padding: 82px 0 72px; } .candidate-filter { margin-top: 62px; } .candidate-categories { grid-template-columns: 1fr; } .candidate-category { min-height: 0; padding: 25px; } .masterlist-page { padding-top: 62px; } .masterlist-intro { margin-bottom: 32px; } }
