@@ -1,6 +1,6 @@
 # Fallen Star plan
 
-Status: backend prototype and website filter implemented. Historical provider data and production evaluation are still pending, so the live page does not publish candidate forecasts yet.
+Status: backend and website filter implemented; a private five-stock real-price pilot has been ingested and evaluated. Full historical U.S./Canadian coverage and reliable production validation are still pending, so the live page does not publish candidate forecasts. See [REAL_DATA_AUDIT.md](REAL_DATA_AUDIT.md).
 
 ## Goal
 

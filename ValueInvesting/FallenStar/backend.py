@@ -13,10 +13,12 @@ import datetime as dt
 import hashlib
 import json
 import math
+import random
 import sqlite3
+import statistics
 import urllib.request
-from collections import defaultdict, deque
-from dataclasses import dataclass
+from collections import Counter, defaultdict, deque
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 
@@ -218,6 +220,9 @@ class Episode:
     end_month: int | None
     outcome: str
     observed_through: int
+    onset_date: str | None = None
+    confirmation_date: str | None = None
+    pending_onset_date: str | None = None
 
     @property
     def drop_month(self) -> int:
@@ -281,7 +286,12 @@ def episodes_for_security(db: sqlite3.Connection, security: sqlite3.Row, as_of: 
                     if closes[previous] >= threshold and close >= threshold:
                         active.end_month = previous
                         active.outcome = "bounce"
+                        active.onset_date = month_last_day[previous]
+                        active.confirmation_date = day.isoformat()
+                        active.pending_onset_date = None
                         active = None
+                if active is not None:
+                    active.pending_onset_date = day.isoformat() if close >= active.trough * 1.15 else None
         if active is None and not armed:
             # A new episode needs full recovery to the old peak.
             if result and close >= result[-1].peak:
@@ -311,6 +321,30 @@ def collect_episodes(db: sqlite3.Connection, as_of: dt.date) -> list[Episode]:
     for security in db.execute("SELECT * FROM security ORDER BY security_id"):
         output.extend(episodes_for_security(db, security, as_of))
     return output
+
+
+def summarize_episodes(db: sqlite3.Connection, as_of: dt.date, output: Path) -> dict:
+    """Export a private, auditable historical episode inventory."""
+    episodes = collect_episodes(db, as_of)
+    counts = Counter(ep.outcome for ep in episodes)
+    securities = db.execute("SELECT COUNT(*) FROM security").fetchone()[0]
+    price_rows, first_price, last_price = db.execute(
+        "SELECT COUNT(*),MIN(trading_date),MAX(trading_date) FROM price").fetchone()
+    records = []
+    for ep in episodes:
+        record = asdict(ep)
+        record["drop_month"] = month_label(ep.drop_month)
+        record["outcome_month"] = month_label(ep.end_month) if ep.end_month is not None else None
+        record["elapsed_months"] = ep.end_month - ep.drop_month if ep.end_month is not None else None
+        records.append(record)
+    result = {"as_of": as_of.isoformat(), "securities": securities,
+              "price_rows": price_rows, "first_price": first_price, "last_price": last_price,
+              "episodes": len(records), "confirmed_bounces": counts["bounce"],
+              "delistings": counts["delisted"], "unresolved": counts["open"],
+              "records": records}
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(result, indent=2) + "\n", encoding="utf-8")
+    return {key: value for key, value in result.items() if key != "records"}
 
 
 def health(db: sqlite3.Connection, issuer_id: str, drop_date: str) -> dict:
@@ -398,7 +432,7 @@ def fit_hazards(episodes: list[Episode], training_as_of: dt.date) -> dict:
 def forecast(model: dict, ep: Episode, as_of: dt.date) -> list[dict]:
     """Conditional onset probabilities after the as-of month, capped at data support."""
     age = month(as_of) - ep.drop_month
-    if age < 0 or ep.outcome != "open":
+    if age < 0 or ep.outcome != "open" or ep.pending_onset_date:
         return []
     survival = 1.0
     output = []
@@ -474,6 +508,10 @@ def evaluate(db: sqlite3.Connection, cutoffs: list[dt.date], horizon_months: int
     final_month = month(date(last_price))
     observations = []
     eligible = 0
+    pending = 0
+    unsupported = 0
+    censored = 0
+    timing_errors = []
     for cutoff in cutoffs:
         if month(cutoff) + horizon_months + 1 > final_month:
             raise ValueError(f"Cutoff {cutoff} lacks {horizon_months} months of follow-up")
@@ -484,12 +522,22 @@ def evaluate(db: sqlite3.Connection, cutoffs: list[dt.date], horizon_months: int
         for ep in before:
             if ep.outcome != "open":
                 continue
+            if ep.pending_onset_date:
+                pending += 1
+                continue
             eligible += 1
             key = ep.security_id + "|" + ep.drop_date
             actual = after.get(key)
             if actual is None:
                 continue
             predicted = forecast(model, ep, cutoff)
+            if not predicted:
+                unsupported += 1
+                continue
+            within_horizon = [p for p in predicted if month(date(p["month"] + "-01")) <= month(cutoff) + horizon_months]
+            if actual.outcome == "bounce" and actual.end_month is not None and month(cutoff) < actual.end_month <= month(cutoff) + horizon_months and within_horizon:
+                best = max(within_horizon, key=lambda row: row["probability"])
+                timing_errors.append(abs(month(date(best["month"] + "-01")) - actual.end_month))
             for p in predicted[:horizon_months]:
                 target_age = month(date(p["month"] + "-01"))
                 if target_age > month(cutoff) + horizon_months:
@@ -497,15 +545,18 @@ def evaluate(db: sqlite3.Connection, cutoffs: list[dt.date], horizon_months: int
                 # An unresolved episode without prices through this month is
                 # right-censored, not a known negative result.
                 if actual.outcome == "open" and actual.observed_through < target_age:
+                    censored += 1
                     continue
                 y = int(actual.outcome == "bounce" and actual.end_month == target_age)
                 offset = target_age - month(cutoff)
                 base = (1 - model["global_bounce"] - model["global_delist"]) ** (offset - 1) * model["global_bounce"]
                 observations.append({"probability": p["probability"], "baseline": base, "actual": y,
                                      "target": p["month"], "cutoff": cutoff.isoformat(),
-                                     "exchange": ep.exchange})
+                                     "exchange": ep.exchange, "issuer_id": ep.issuer_id})
     if not observations:
-        return {"eligible_open_episodes": eligible, "observations": 0,
+        return {"eligible_open_episodes": eligible, "pending_confirmation_excluded": pending,
+                "unsupported_forecasts": unsupported, "right_censored_targets": censored,
+                "observations": 0,
                 "reason": "no supported and fully observed forecasts at selected cutoffs"}
     n = len(observations)
     prevalence = sum(r["actual"] for r in observations) / n
@@ -528,13 +579,44 @@ def evaluate(db: sqlite3.Connection, cutoffs: list[dt.date], horizon_months: int
                     "count": len(rows), "mean_probability": round(sum(r["probability"] for r in rows) / len(rows), 4),
                     "actual_rate": round(sum(r["actual"] for r in rows) / len(rows), 4)}
                    for i, rows in sorted(bins.items())]
-    return {"eligible_open_episodes": eligible, "observations": n,
+    def group_metrics(rows):
+        count = len(rows)
+        return {"observations": count, "actual_bounces": sum(r["actual"] for r in rows),
+                "brier": round(sum((r["probability"] - r["actual"]) ** 2 for r in rows) / count, 6),
+                "baseline_brier": round(sum((r["baseline"] - r["actual"]) ** 2 for r in rows) / count, 6)}
+    grouped_year = defaultdict(list)
+    grouped_exchange = defaultdict(list)
+    grouped_regime = defaultdict(list)
+    for row in observations:
+        year = int(row["target"][:4])
+        grouped_year[year].append(row)
+        grouped_exchange[row["exchange"]].append(row)
+        grouped_regime["2020-2021" if year in {2020, 2021} else "other years"].append(row)
+    issuers = sorted({row["issuer_id"] for row in observations})
+    by_issuer = {issuer: [row for row in observations if row["issuer_id"] == issuer] for issuer in issuers}
+    rng = random.Random(17)
+    differences = []
+    for _ in range(500):
+        sample = [row for issuer in rng.choices(issuers, k=len(issuers)) for row in by_issuer[issuer]]
+        differences.append(sum((row["probability"] - row["actual"]) ** 2 -
+                               (row["baseline"] - row["actual"]) ** 2 for row in sample) / len(sample))
+    differences.sort()
+    return {"eligible_open_episodes": eligible, "pending_confirmation_excluded": pending,
+            "unsupported_forecasts": unsupported, "right_censored_targets": censored,
+            "observations": n, "issuer_clusters": len(issuers),
             "actual_rate": round(prevalence, 6),
             "mean_probability": round(sum(r["probability"] for r in observations) / n, 6),
             "brier": round(brier, 6), "constant_hazard_baseline_brier": round(baseline, 6),
             "log_loss": round(log_loss("probability"), 6),
             "constant_hazard_baseline_log_loss": round(log_loss("baseline"), 6),
             "mean_top_10_precision": round(sum(top_10) / len(top_10), 6),
+            "timing_error_observed_bounces": len(timing_errors),
+            "median_absolute_onset_error_months": statistics.median(timing_errors) if timing_errors else None,
+            "within_one_month_rate": round(sum(error <= 1 for error in timing_errors) / len(timing_errors), 6) if timing_errors else None,
+            "model_minus_baseline_brier_ci95_by_issuer": [round(differences[12], 6), round(differences[487], 6)],
+            "by_target_year": {str(year): group_metrics(rows) for year, rows in sorted(grouped_year.items())},
+            "by_exchange": {exchange: group_metrics(rows) for exchange, rows in sorted(grouped_exchange.items())},
+            "by_regime": {regime: group_metrics(rows) for regime, rows in sorted(grouped_regime.items())},
             "calibration": calibration, "cutoffs": [d.isoformat() for d in cutoffs]}
 
 
@@ -555,6 +637,9 @@ def main() -> None:
     p = commands.add_parser("evaluate", help="Walk-forward monthly Brier evaluation")
     p.add_argument("--cutoffs", nargs="+", type=date, required=True)
     p.add_argument("--horizon", type=int, default=12)
+    p = commands.add_parser("episodes", help="Export private historical drop/bounce inventory")
+    p.add_argument("--as-of", type=date, required=True)
+    p.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     with connection(args.db) as db:
         if args.command == "ingest":
@@ -563,8 +648,10 @@ def main() -> None:
             result = {"imported_facts": import_sec_revenue(db, args.issuer_id, args.cik, args.user_agent)}
         elif args.command == "run":
             result = run(db, args.as_of, args.target, args.output)
-        else:
+        elif args.command == "evaluate":
             result = evaluate(db, args.cutoffs, args.horizon)
+        else:
+            result = summarize_episodes(db, args.as_of, args.output)
     print(json.dumps(result, indent=2))
 
 

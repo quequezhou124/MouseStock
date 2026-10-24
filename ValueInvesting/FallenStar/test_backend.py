@@ -4,7 +4,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from backend import Episode, collect_episodes, connection, evaluate, fit_hazards, forecast, health, ingest, month, run
+from backend import Episode, collect_episodes, connection, evaluate, fit_hazards, forecast, health, ingest, month, run, summarize_episodes
 
 
 def write_csv(path, header, rows):
@@ -52,9 +52,13 @@ class BackendTest(unittest.TestCase):
         before = collect_episodes(self.db, dt.date(2017, 5, 31))
         self.assertEqual(len(before), 1)
         self.assertEqual(before[0].outcome, "open")
+        self.assertEqual(before[0].pending_onset_date, "2017-05-31")
         after = collect_episodes(self.db, dt.date(2017, 6, 30))
         self.assertEqual(after[0].outcome, "bounce")
         self.assertEqual(after[0].end_month, month(dt.date(2017, 5, 1)))
+        self.assertEqual(after[0].onset_date, "2017-05-31")
+        self.assertEqual(after[0].confirmation_date, "2017-06-30")
+        self.assertGreater(after[0].confirmation_date, after[0].onset_date)
 
     def test_late_2010_drop_is_still_ineligible(self):
         with self.db:
@@ -99,7 +103,14 @@ class BackendTest(unittest.TestCase):
     def test_evaluation_reports_insufficient_training_support(self):
         result = evaluate(self.db, [dt.date(2017, 5, 31)], 3)
         self.assertEqual(result["observations"], 0)
-        self.assertEqual(result["eligible_open_episodes"], 1)
+        self.assertEqual(result["pending_confirmation_excluded"], 1)
+
+    def test_private_episode_inventory(self):
+        output = Path(self.temp.name) / "episodes.json"
+        result = summarize_episodes(self.db, dt.date(2017, 6, 30), output)
+        self.assertEqual(result["confirmed_bounces"], 1)
+        self.assertEqual(result["delistings"], 0)
+        self.assertTrue(output.exists())
 
 
 if __name__ == "__main__":

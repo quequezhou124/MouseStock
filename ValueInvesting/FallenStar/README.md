@@ -1,6 +1,6 @@
 # Fallen Star backend
 
-`backend.py` implements the historical-data import, drop/bounce labeling, pre-drop revenue-growth check, monthly competing-risk cohort forecast, selected-month JSON export, and walk-forward evaluation. It uses the Python standard library. [PLAN.md](PLAN.md) records the research rules.
+`backend.py` implements the historical-data import, drop/bounce labeling, pre-drop revenue-growth check, monthly competing-risk cohort **baseline**, selected-month JSON export, and walk-forward evaluation. It uses the Python standard library. [PLAN.md](PLAN.md) records the research rules; [REAL_DATA_AUDIT.md](REAL_DATA_AUDIT.md) reports the private real-price pilot and its limits.
 
 ## Data input
 
@@ -31,10 +31,15 @@ python3 backend.py ingest /private/path/to/provider-csvs
 python3 backend.py sec-revenue ISSUER_ID CIK --user-agent 'MouseStocks contact@example.com'
 python3 backend.py run --as-of 2026-10-24 --target 2026-11 --output data/forecast-2026-11.json
 python3 backend.py evaluate --cutoffs 2020-12-31 2021-12-31 --horizon 12
+python3 backend.py episodes --as-of 2026-10-23 --output data/episodes.json
 python3 -m unittest discover -p 'test_backend.py'
 ```
 
 By default the SQLite database is `data/fallen_star.sqlite`; `--db` changes it. `data/` is gitignored because it may contain licensed or nonpublic data. Generated forecasts are private until their publication rights and evaluation have been checked.
+
+## Private real-price pilot
+
+`ingest_eodhd.py` downloads the EODHD demo histories for AAPL, MSFT, AMZN, TSLA, and MCD into `data/eodhd_demo.sqlite`, with raw provider responses under `data/eodhd_demo/raw/`. Run `python3 ingest_eodhd.py` from this directory. It uses the public `demo` token unless `EODHD_API_TOKEN` is set. The pilot has five currently active U.S. stocks, no delisted securities, no Canadian securities, and **no point-in-time annual revenues**. EODHD's `adjusted_close` includes split and dividend adjustments; the pilot also imports split dates. This dataset is for private method verification, not public candidate publication.
 
 ## Website result contract
 
@@ -44,6 +49,6 @@ After historical data rights and out-of-sample performance have been reviewed, g
 
 ## Current model and limits
 
-The forecast is an age- and four-year drop-cohort-specific monthly bounce/delisting hazard estimated from 2011-onward episodes, smoothed toward the overall observed rate. It returns a candidate for the requested month when that month has the highest supported onset probability. At least ten historical episodes must still be at risk at an elapsed month before that month is forecast. No result is produced beyond 36 months or where historical support is insufficient.
+The forecast is an age- and four-year drop-cohort-specific monthly bounce/delisting hazard estimated from 2011-onward episodes, smoothed toward the overall observed rate. This is a **historical cohort baseline, not a feature-trained machine-learning model**. It returns a candidate for the requested month when that month has the highest supported onset probability. An episode with a possible, unconfirmed onset is withheld until the following month's close can confirm or reject it. At least ten historical episodes must still be at risk at an elapsed month before that month is forecast. No result is produced beyond 36 months or where historical support is insufficient.
 
-This is an initial statistical model, not a calibrated production prediction. Evaluation reports Brier score, log loss, probability calibration, and monthly top-ten precision against a simpler training-only constant-hazard baseline. Before publishing forecasts, add broader market-regime evaluation, licensed data coverage audits, and a release threshold based on out-of-sample results. A blank result may mean no matching stocks or insufficient history; inspect `unsupported_active_episodes`, `training_episodes`, and `data_quality_warnings`.
+This baseline is not a calibrated production prediction. Evaluation reports Brier score, log loss, probability calibration, onset timing error, monthly top-ten precision, year/exchange breakdowns, and an issuer-cluster uncertainty interval against a simpler training-only constant-hazard baseline. The private five-stock pilot did not beat that baseline in its later exploratory window. Before publishing forecasts, obtain historical delisted and Canadian coverage, point-in-time financial facts, a fresh untouched evaluation period, and demonstrated out-of-sample improvement. A blank result may mean no matching stocks or insufficient history; inspect `unsupported_active_episodes`, `training_episodes`, and `data_quality_warnings`.
