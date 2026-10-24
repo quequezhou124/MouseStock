@@ -6,6 +6,7 @@ the Python standard library, including the minimal XLSX writer.
 """
 
 import csv
+import json
 import re
 import urllib.request
 import xml.sax.saxutils as xml
@@ -103,7 +104,6 @@ def main():
     for name in picked:
         if name:
             names.setdefault(name.casefold(), name)
-    import json
     cse_rows = json.loads(fetch(SOURCES["cse"]))
     picked = [clean_name(r["securityName"]) for r in cse_rows
               if r["status"] == "Active"
@@ -115,6 +115,9 @@ def main():
     result = sorted(names.values(), key=str.casefold)
     path = ROOT / "masterstockexcel.xlsx"
     xlsx(result, path)
+    site_data = ROOT / "docs" / "masterlist" / "stocks.json"
+    site_data.parent.mkdir(parents=True, exist_ok=True)
+    site_data.write_text(json.dumps(result, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     print(path)
     print("source rows", counts)
     print("unique names", len(result))

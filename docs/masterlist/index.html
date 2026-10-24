@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#0b1930">
+    <meta name="description" content="Browse and search the MouseStocks master list of U.S. and Canadian stocks.">
+    <title>Masterlist · MouseStocks</title>
+    <link rel="stylesheet" href="../styles.css">
+    <script src="masterlist.js" defer></script>
+  </head>
+  <body>
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="brand" href="../" aria-label="MouseStocks home"><span class="brand-mark" aria-hidden="true">M</span><span>MouseStocks</span></a>
+        <nav class="top-nav" aria-label="Main navigation">
+          <a href="../">Home</a>
+          <a href="./" aria-current="page">Masterlist</a>
+          <a href="../value-investing/">ValueInvesting</a>
+        </nav>
+      </header>
+
+      <main class="masterlist-page">
+        <p class="eyebrow">STOCK DIRECTORY</p>
+        <h1>Masterlist</h1>
+        <p class="masterlist-intro">Browse the stock names in the U.S. and Canadian master list.</p>
+
+        <div class="list-toolbar">
+          <label for="stock-search">Search stocks</label>
+          <input id="stock-search" type="search" placeholder="Search by company name" autocomplete="off">
+          <p id="result-count" class="result-count" role="status" aria-live="polite">Loading stocks…</p>
+        </div>
+
+        <div class="list-panel">
+          <ol id="stock-list" class="stock-list" aria-label="Stock names"></ol>
+          <p id="empty-state" class="empty-state" hidden>No matching stocks found.</p>
+          <button id="load-more" class="load-more" type="button" hidden>Show more</button>
+        </div>
+      </main>
+
+      <footer class="site-footer">MouseStocks</footer>
+    </div>
+  </body>
+</html>
