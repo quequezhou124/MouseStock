@@ -8,6 +8,7 @@ MouseStocks is a static GitHub Pages site for stock research. The current resear
 | --- | --- |
 | `ValueInvesting/build_masterstock.py` | Builds the ValueInvesting names-only stock universe. |
 | `ValueInvesting/masterstockexcel.xlsx` | Excel copy of that universe. |
+| `ValueInvesting/FallenStar/PLAN.md` | Agreed scope and behavior for the Fallen Star candidate filter. |
 | `docs/` | Public GitHub Pages site. |
 | `docs/value-investing/masterlist/stocks.json` | Website copy of the same names. |
 | `docs/masterlist/index.html` | Redirect for the former global Masterlist URL. |
