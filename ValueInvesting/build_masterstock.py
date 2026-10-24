@@ -1,8 +1,9 @@
-"""Build a names-only Excel union of U.S. and Canadian listed stocks.
+"""Build the ValueInvesting names-only union of U.S. and Canadian listed stocks.
 
 Inputs are snapshots of Nasdaq Trader's nasdaqlisted/otherlisted directories and
-a TMX-derived TSX/TSXV issuer CSV (see source URLs below). This script uses only
-the Python standard library, including the minimal XLSX writer.
+a TMX-derived TSX/TSXV issuer CSV (see source URLs below). The workbook stays in
+ValueInvesting and the matching website data is written to docs/value-investing.
+This script uses only the Python standard library, including the minimal XLSX writer.
 """
 
 import csv
@@ -115,7 +116,7 @@ def main():
     result = sorted(names.values(), key=str.casefold)
     path = ROOT / "masterstockexcel.xlsx"
     xlsx(result, path)
-    site_data = ROOT / "docs" / "masterlist" / "stocks.json"
+    site_data = ROOT.parent / "docs" / "value-investing" / "masterlist" / "stocks.json"
     site_data.parent.mkdir(parents=True, exist_ok=True)
     site_data.write_text(json.dumps(result, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
     print(path)
