@@ -1,6 +1,6 @@
 # Fallen Star plan
 
-Status: planning. No Fallen Star data pipeline, model, or filter has been implemented.
+Status: backend prototype implemented in [backend.py](backend.py). Historical provider data, production evaluation, and the website filter are still pending.
 
 ## Goal
 
@@ -13,7 +13,7 @@ Treat **January 1, 2010 as the start of the usable history**. Do not use prices,
 This starting point creates two warm-up periods:
 
 - A drop needs a preceding 12 months of observed prices. Drops during 2010 cannot be labeled under the full-lookback rule; the first eligible drops are approximately January 2011, once a security has 12 months of post-start history.
-- The proposed financial-health rule needs six consecutive annual revenue observations to measure five year-to-year intervals, with all fiscal periods ending in 2010 or later and all reports filed before the drop. For a calendar-year reporter, fiscal years 2010–2015 can first support the check after the 2015 report is filed, generally in 2016. Earlier drops have **Unknown** health rather than inferred growth from pre-2010 data. Other fiscal-year schedules and filing dates shift the first eligible date.
+- The proposed financial-health rule needs six consecutive annual revenue observations to measure five year-to-year intervals, with each entire fiscal period beginning in 2010 or later and all reports filed before the drop. For a calendar-year reporter, fiscal years 2010–2015 can first support the check after the 2015 report is filed, generally in 2016. Earlier drops have **Unknown** health rather than inferred growth from pre-2010 data. Other fiscal-year schedules and filing dates shift the first eligible date.
 
 Training and evaluation must respect these warm-up periods. A prediction may use only observations available by its historical as-of date. Episodes still open at the end of the available history remain unresolved, not failures.
 
