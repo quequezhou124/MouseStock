@@ -10,9 +10,6 @@ a { color: inherit; }
 .top-nav a { padding: 8px 0; color: #687789; font-size: 13px; font-weight: 600; text-decoration: none; border-bottom: 2px solid transparent; }
 .top-nav a:hover, .top-nav a:focus-visible { color: #0b1930; }
 .top-nav a[aria-current="page"] { color: #0b1930; border-bottom-color: #42826d; }
-.header-label, .back-link { font-size: 13px; color: #687789; }
-.back-link { text-decoration: none; }
-.back-link:hover { color: #0b1930; }
 main { flex: 1; }
 .intro { padding: 112px 0 99px; max-width: 680px; }
 .eyebrow { margin: 0 0 22px; color: #42826d; font-size: 11px; font-weight: 800; letter-spacing: .16em; }
@@ -29,8 +26,6 @@ h2 { margin: 0; font-size: 15px; letter-spacing: -.01em; }
 .card-copy strong { font-size: 18px; letter-spacing: -.03em; }
 .card-copy span { color: #778596; font-size: 13px; }
 .card-arrow { margin-left: auto; color: #497e68; font-size: 24px; line-height: 1; }
-.empty-section { padding-top: 112px; }
-.empty-section h1 { font-size: clamp(42px, 6vw, 70px); }
 .value-investing-page { padding: 112px 0 100px; }
 .value-investing-page h1 { font-size: clamp(42px, 6vw, 70px); }
 .resource-link { display: inline-flex; align-items: center; gap: 18px; margin-top: 34px; padding: 16px 20px; border: 1px solid #a9c7ba; border-radius: 11px; background: #e9f3ee; color: #285e4c; font-size: 14px; font-weight: 700; text-decoration: none; }
@@ -60,4 +55,4 @@ h2 { margin: 0; font-size: 15px; letter-spacing: -.01em; }
 .load-more:hover { background: #f4f8f6; }
 .load-more[hidden], .empty-state[hidden] { display: none; }
 .site-footer { padding: 24px 0 28px; border-top: 1px solid #dae0e5; color: #98a3af; font-size: 12px; }
-@media (max-width: 640px) { .site-shell { padding: 0 22px; } .site-header { min-height: 78px; flex-wrap: wrap; gap: 6px; padding: 18px 0 12px; } .top-nav { width: 100%; gap: 20px; overflow-x: auto; white-space: nowrap; } .header-label { display: none; } .intro { padding: 82px 0 80px; } .intro-copy { font-size: 16px; } .sections { padding-bottom: 60px; } .section-card { min-height: 100px; padding: 18px; } .card-icon { width: 50px; height: 50px; flex-basis: 50px; } .empty-section { padding-top: 82px; } .value-investing-page { padding: 82px 0 72px; } .candidate-filter { margin-top: 62px; } .candidate-categories { grid-template-columns: 1fr; } .candidate-category { min-height: 0; padding: 25px; } .masterlist-page { padding-top: 62px; } .masterlist-intro { margin-bottom: 32px; } }
+@media (max-width: 640px) { .site-shell { padding: 0 22px; } .site-header { min-height: 78px; flex-wrap: wrap; gap: 6px; padding: 18px 0 12px; } .top-nav { width: 100%; gap: 20px; overflow-x: auto; white-space: nowrap; } .intro { padding: 82px 0 80px; } .intro-copy { font-size: 16px; } .sections { padding-bottom: 60px; } .section-card { min-height: 100px; padding: 18px; } .card-icon { width: 50px; height: 50px; flex-basis: 50px; } .value-investing-page { padding: 82px 0 72px; } .candidate-filter { margin-top: 62px; } .candidate-categories { grid-template-columns: 1fr; } .candidate-category { min-height: 0; padding: 25px; } .masterlist-page { padding-top: 62px; } .masterlist-intro { margin-bottom: 32px; } }
